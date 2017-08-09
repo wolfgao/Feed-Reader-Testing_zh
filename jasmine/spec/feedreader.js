@@ -21,16 +21,21 @@ $(function() {
             expect(allFeeds.length).not.toBe(0);
         });
 
-
+        //Because name and URL use the samiliar detections, so we let them in a function together.
+        var sameDetection = function(val){
+          expect(val).toBeDefined();
+          expect(val).not.toBeNull();
+          expect(val).not.toEqual('');
+        }
         /* TODO:
          * 编写一个测试遍历 allFeeds 对象里面的所有的源来保证有链接字段而且链接不是空的。
          */
-        it('Each link in allFeeds is defined and not null, or not \'\'', function(){
+        it('Each link in allFeeds is defined, valid and not null, or not \'\'', function(){
+          var regularExpressionUrl = /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/; // 检查 URL 格式是否正确的正规表达式
             $.each(allFeeds, function(index, feed){
-
-                expect(feed.url).toBeDefined();
-                expect(feed.url).not.toBeNull();
-                expect(feed.url).not.toEqual('');
+              //Check the url is valid URL
+              expect(feed.url).toMatch(regularExpressionUrl);
+              sameDetection(feed.url);
             })
 
         });
@@ -40,10 +45,7 @@ $(function() {
          */
         it('Each name in allFeeds is defined and not null, or not \'\'', function(){
             $.each(allFeeds, function(index, feed){
-
-                expect(feed.name).toBeDefined();
-                expect(feed.name).not.toBeNull();
-                expect(feed.name).not.toEqual('');
+              sameDetection(feed.name);
             })
 
         });
@@ -53,15 +55,15 @@ $(function() {
     /* TODO: 写一个叫做 "The menu" 的测试用例 */
     describe('The Menu', function() {
             var menuIcon = $('.menu-icon-link'),
-                bodyClass = $('body').attr('class');
+                body = $("body");
 
         /* TODO:
          * 写一个测试用例保证菜单元素默认是隐藏的。你需要分析 html 和 css
          * 来搞清楚我们是怎么实现隐藏/展示菜单元素的。
          */
-        it('Menu is hidden by default', function(){
+        it('body class has \"menu-hidden\" by default', function(){
             //menu-hidden .slide-menu {transform: translate3d(-12em, 0, 0);
-            expect(bodyClass).toBe("menu-hidden");
+            expect(body.hasClass('menu-hidden')).toBeTruthy(); //If having "menu-hidden", will return true
         });
 
          /* TODO:
@@ -72,10 +74,10 @@ $(function() {
          it('Menu icon can be toggled after clicking', function(){
             // Click once to show the menu
             menuIcon.trigger('click');
-            expect(bodyClass).not.toBeDefined;
+            expect(body.hasClass('menu-hidden')).toBeFalsy(); //click link icon will remove the class.
             //Click again to hide the menu
             menuIcon.trigger('click');
-            expect(bodyClass).toBe("menu-hidden");
+            expect(body.hasClass('menu-hidden')).toBeTruthy(); // if click again, body will has the class to hide the menu.
         });
     });
     /* TODO: 13. 写一个叫做 "Initial Entries" 的测试用例 */
@@ -90,15 +92,14 @@ $(function() {
          */
         beforeEach(function(done){
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000; //Change default timeout to a longer time.
-            loadFeed(0, function(){
-                done(); // we're done, Jasmine can run the specs now
-            });
+            loadFeed(0, done);
         });
 
         //在发出ajax请求后，获得entry数组,至少有一个存在。
-        it('At least one .entry element exists in .feed.', function(done){
+        //这里的 it 测试用例中不包含任何的异步请求，所以删除99行的 function(done) 可选参数 done。
+        it('At least one .entry element exists in .feed.', function(){
             expect($('.feed .entry').length).toBeGreaterThan(0);
-            done();
+            //done();
         })
 
         //执行完测试用例后，恢复改变的属性值
@@ -119,9 +120,7 @@ $(function() {
             loadFeed(0, function(){
                 oldFeed = $('.feed').html();
                 oldTitle = $('.header-title').html();
-                loadFeed(1, function(){
-                    done(); // we're done, Jasmine can run the specs now
-                });
+                loadFeed(1, done);
             });
         });
 

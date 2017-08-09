@@ -25,7 +25,34 @@ beforeEach(function(done){
             });
         });
 ```
+补充内容：
+在老师评审之后，简化了我的done 回调函数，另外收获更多，希望和大家分享一下：
+我们来梳理一下两者的执行过程，分析出为什么可以进行简化：
 
+``` js 
+loadFeed(0, function() {
+  done();
+}); // 简化前
+```
+上面的函数其实就是在调用 js——>app.js 中的 loadFeed 函数，该函数接收两个参数，一个是数字类型，一个是函数类型。忽略掉函数内部其他逻辑代码，专注于第二个参数的调用，可以写出如下的伪代码：
+
+``` js
+function loadFeed(id, cb) {
+  cb = function() {
+      done();
+  } // 参数cb就等于我们的在开头传递的第二个参数：匿名函数。
+
+  cb(); // 调用函数。此时执行 cb ，本质上就是在执行 feedreader.js 中 beforeEach 的可选参数 `done`，即 cb() == done() . 当done函数被调用，表明异步操作的回调函数调用成功.
+}
+loadFeed(0, done); // 简化后
+```
+简化后的伪代码：
+``` js
+function loadFeed(id, cb) {
+  cb = done;
+  cb(); // 看出效果没有呢？ 此时的cb就是 beforeEach 中传递的 done 函数，调用 cb 就等同于 调用 done 
+}
+```
 
 ## 这对我的职业有何帮助？
 
